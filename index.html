@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kantonspolizei Uri - Training</title>
+    <style>
+        :root {
+            --neon-blue: #00f3ff;
+            --neon-pink: #ff00ff;
+            --neon-green: #39ff14;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #000;
+            color: white;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            text-align: center;
+        }
+
+        /* Blaulicht Animation */
+        @keyframes alarm {
+            0% { background-color: #000; }
+            50% { background-color: #0000ff; }
+            100% { background-color: #000; }
+        }
+
+        .screen { display: none; width: 100%; height: 100%; flex-direction: column; justify-content: center; align-items: center; }
+        .active { display: flex; }
+
+        /* Bild & Sprechblase */
+        #uri-img { max-width: 80%; border: 5px solid white; border-radius: 10px; }
+        
+        .bubble {
+            background: white;
+            color: black;
+            padding: 20px;
+            border-radius: 20px;
+            position: relative;
+            margin-top: 20px;
+            max-width: 300px;
+            font-weight: bold;
+        }
+
+        /* Neon Türen */
+        .door-container { display: flex; gap: 30px; }
+        .door {
+            width: 100px;
+            height: 180px;
+            border: 4px solid;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            transition: transform 0.3s;
+        }
+        .door:hover { transform: scale(1.1); }
+        .blue-door { border-color: var(--neon-blue); box-shadow: 0 0 20px var(--neon-blue); color: var(--neon-blue); }
+        .pink-door { border-color: var(--neon-pink); box-shadow: 0 0 20px var(--neon-pink); color: var(--neon-pink); }
+        .green-door { border-color: var(--neon-green); box-shadow: 0 0 20px var(--neon-green); color: var(--neon-green); }
+
+        /* Training Button */
+        #target {
+            width: 70px;
+            height: 70px;
+            background-color: red;
+            border-radius: 50%;
+            position: absolute;
+            cursor: pointer;
+            box-shadow: 0 0 30px red;
+            border: none;
+        }
+
+        .btn-final {
+            padding: 15px 30px;
+            background: #2ecc71;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body id="main-body">
+
+    <div id="step-1" class="screen active">
+        <button onclick="startSequence()" style="padding: 20px; font-size: 20px; cursor: pointer;">Einsatz starten!</button>
+    </div>
+
+    <div id="step-2" class="screen">
+        <img src="uri.JPG" alt="Uri" id="uri-img">
+        <div class="bubble" id="bubble-text">Wird geladen...</div>
+    </div>
+
+    <div id="step-3" class="screen">
+        <h2>Wähle deinen Sektor:</h2>
+        <div class="door-container">
+            <div class="door blue-door" onclick="startTraining()">A</div>
+            <div class="door pink-door" onclick="startTraining()">B</div>
+            <div class="door green-door" onclick="startTraining()">C</div>
+        </div>
+    </div>
+
+    <div id="step-4" class="screen">
+        <p>REAGIERE SCHNELL!</p>
+        <div id="target"></div>
+    </div>
+
+    <div id="step-5" class="screen">
+        <h1>Training abgeschlossen!</h1>
+        <p id="result-text"></p>
+        <br>
+        <a href="https://bullenpower-uri.ch" class="btn-final">Zurück zur Basis (Bullenpower)</a>
+    </div>
+
+    <script>
+        let round = 0;
+        let startTime;
+        let times = [];
+
+        function showScreen(id) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+        }
+
+        function startSequence() {
+            // Blaulicht Effekt
+            document.getElementById('main-body').style.animation = "alarm 0.5s infinite";
+            
+            setTimeout(() => {
+                alert("SOFORTIGER EINSATZ IM KANTON URI!");
+                document.getElementById('main-body').style.animation = "none";
+                showScreen('step-2');
+                
+                // Bild zeigen, dann Text
+                setTimeout(() => {
+                    document.getElementById('bubble-text').innerText = "Auf der Strasse musst du dich schnell entscheiden. Diese Fähigkeiten werden jetzt trainiert!";
+                    setTimeout(() => showScreen('step-3'), 4000);
+                }, 3000);
+            }, 100);
+        }
+
+        function startTraining() {
+            showScreen('step-4');
+            nextRound();
+        }
+
+        function nextRound() {
+            if (round < 5) {
+                const target = document.getElementById('target');
+                const x = Math.random() * (window.innerWidth - 100);
+                const y = Math.random() * (window.innerHeight - 100);
+                
+                target.style.left = x + "px";
+                target.style.top = y + "px";
+                target.style.display = "block";
+                
+                startTime = Date.now();
+            } else {
+                finish();
+            }
+        }
+
+        document.getElementById('target').onclick = function() {
+            let reactionTime = (Date.now() - startTime) / 1000;
+            
+            if (reactionTime <= 2.0) {
+                times.push(reactionTime);
+                round++;
+                this.style.display = "none";
+                setTimeout(nextRound, 500);
+            } else {
+                alert("Zu langsam (" + reactionTime + "s)! Konzentration!");
+                // Wir setzen die Runde nicht hoch, er muss es nochmal versuchen
+            }
+        };
+
+        function finish() {
+            showScreen('step-5');
+            let avg = times.reduce((a, b) => a + b, 0) / times.length;
+            document.getElementById('result-text').innerText = "Deine Durchschnittszeit: " + avg.toFixed(3) + " Sekunden.";
+            
+            // Hier könnten die Daten an eine DB gesendet werden
+            console.log("Ergebnisse für Bestenliste:", times);
+        }
+    </script>
+</body>
+</html>
